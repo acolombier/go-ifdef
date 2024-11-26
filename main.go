@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -24,7 +25,15 @@ func main() {
 	goos := os.Getenv("GOOS")
 	ifdefModifier := IfdefModifier{GOOS: goos}
 
-	goinject.Process(ifdefModifier)
+	if len(os.Args) == 2 && filepath.Ext(os.Args[1]) == ".go" {
+		buf, err := goinject.Evaluate(ifdefModifier, os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+		buf.WriteTo(os.Stdout)
+	} else {
+		goinject.Process(ifdefModifier)
+	}
 }
 
 type IfdefModifier struct {
